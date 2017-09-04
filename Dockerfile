@@ -40,6 +40,9 @@ COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groov
 ARG JENKINS_VERSION
 ENV JENKINS_VERSION ${JENKINS_VERSION:-2.60.3}
 
+# do not run jenkins setup wizard
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=2d71b8f87c8417f9303a73d52901a59678ee6c0eefcf7325efed6035ff39372a
 
@@ -72,3 +75,10 @@ ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
+
+# groovy file to create admin user admin:admin
+COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
+
+# list of jenkins plugins to be preinstalled
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
